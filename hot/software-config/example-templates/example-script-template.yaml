@@ -2,11 +2,13 @@ heat_template_version: 2013-05-23
 parameters:
   key_name:
     type: string
+    default: default
   flavor:
     type: string
+    default: m1.small 
   image:
     type: string
-    default: fedora-software-config
+    default: centos7-software-config
 
 resources:
   the_sg:

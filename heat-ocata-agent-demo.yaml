@@ -1,20 +1,7 @@
 heat_template_version: 2017-02-24
 
-description: |
-  A template which demonstrates doing boot-time installation of the required
-  files for script based software deployments.
-  This template expects to be created with an environment which defines
-  the resource type Heat::InstallConfigAgent such as
-  ../boot-config/fedora_pip_env.yaml
-
-parameters:
-  image:
-    default: centos7-software-config
-    type: string
-
 resources:
-
-  config:
+  config2:
     type: OS::Heat::SoftwareConfig
     properties:
       group: script
@@ -28,45 +15,44 @@ resources:
         echo "Writing to /tmp/$bar"
         echo $foo > /tmp/$bar
         echo -n "The file /tmp/$bar contains `cat /tmp/$bar` for server $deploy_server_id during $deploy_action" > $heat_outputs_path.result
-        echo "Writing to /tmp/$bar"
+        echo "Written to /tmp/$bar"
         echo "Output to stderr" 1>&2
 
-
-  deployment:
+  deployment2:
     type: OS::Heat::SoftwareDeployment
     properties:
       config:
-        get_resource: config
+        get_resource: config2
       server:
-        get_resource: server
+        get_resource: server2
       input_values:
-        foo: fooooo1
-        bar: baaaaa1
+        foo: fooooo
+        bar: baaaaa
+      signal_transport: HEAT_SIGNAL
 
-  server:
+  server2:
     type: OS::Nova::Server
     properties:
-      image: centos7-software-config-golden
+      image: centos7-ocata-software-config4
       flavor: m1.small
       networks:
+#       - network: public
         - network: tenant
       key_name: default
+      # flavor, image etc
       user_data_format: SOFTWARE_CONFIG
+      software_config_transport: POLL_SERVER_HEAT
 
 outputs:
-
   result:
     value:
-      get_attr: [deployment, result]
+      get_attr: [deployment2, result]
   stdout:
     value:
-      get_attr: [deployment, deploy_stdout]
+      get_attr: [deployment2, deploy_stdout]
   stderr:
     value:
-      get_attr: [deployment, deploy_stderr]
+      get_attr: [deployment2, deploy_stderr]
   status_code:
     value:
-      get_attr: [deployment, deploy_status_code]
-  server_ip:
-    value:
-      get_attr: [server, accessIPv4]
+      get_attr: [deployment2, deploy_status_code]

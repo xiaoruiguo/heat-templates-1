@@ -1,19 +1,6 @@
 heat_template_version: 2017-02-24
 
-description: |
-  A template which demonstrates doing boot-time installation of the required
-  files for script based software deployments.
-  This template expects to be created with an environment which defines
-  the resource type Heat::InstallConfigAgent such as
-  ../boot-config/fedora_pip_env.yaml
-
-parameters:
-  image:
-    default: centos7-software-config
-    type: string
-
 resources:
-
   config:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -28,9 +15,8 @@ resources:
         echo "Writing to /tmp/$bar"
         echo $foo > /tmp/$bar
         echo -n "The file /tmp/$bar contains `cat /tmp/$bar` for server $deploy_server_id during $deploy_action" > $heat_outputs_path.result
-        echo "Writing to /tmp/$bar"
+        echo "Written to /tmp/$bar"
         echo "Output to stderr" 1>&2
-
 
   deployment:
     type: OS::Heat::SoftwareDeployment
@@ -40,21 +26,25 @@ resources:
       server:
         get_resource: server
       input_values:
-        foo: fooooo1
-        bar: baaaaa1
+        foo: fooooo
+        bar: baaaaa
 
   server:
     type: OS::Nova::Server
     properties:
-      image: centos7-software-config-golden
+      image: centos7-software-config
       flavor: m1.small
       networks:
         - network: tenant
       key_name: default
+      # flavor, image etc
       user_data_format: SOFTWARE_CONFIG
+      user_data: |
+        #! /bin/sh
+        mkdir -p /var/lib/heat-config/heat-config-script
+        mkdir -p /var/run/heat-config/heat-config-script
 
 outputs:
-
   result:
     value:
       get_attr: [deployment, result]
@@ -67,6 +57,3 @@ outputs:
   status_code:
     value:
       get_attr: [deployment, deploy_status_code]
-  server_ip:
-    value:
-      get_attr: [server, accessIPv4]

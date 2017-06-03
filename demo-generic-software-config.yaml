@@ -49,8 +49,8 @@ resources:
       image: centos7-software-config-golden
       flavor: m1.small
       networks:
-        - network: tenant
-      key_name: default
+        - network: demo-net
+      key_name:  demo
       user_data_format: SOFTWARE_CONFIG
 
 outputs:

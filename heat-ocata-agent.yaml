@@ -1,0 +1,48 @@
+heat_template_version: 2017-02-24
+
+resources:
+  config2:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: |
+        #!/bin/sh -x
+        echo "Hello, world!" > /tmp/helloworld
+
+  deployment2:
+    type: OS::Heat::SoftwareDeployment
+    properties:
+      config:
+        get_resource: config2
+      server:
+        get_resource: server2
+# Allowed values: CFN_SIGNAL, TEMP_URL_SIGNAL, HEAT_SIGNAL, NO_SIGNAL, 
+      signal_transport: HEAT_SIGNAL
+
+  server2:
+    type: OS::Nova::Server
+    properties:
+      image: centos7-ocata-software-config4
+      flavor: m1.small
+      networks:
+#       - network: public
+        - network: tenant
+      key_name: default
+      # flavor, image etc
+      user_data_format: SOFTWARE_CONFIG
+# Allowed values: POLL_SERVER_CFN, POLL_SERVER_HEAT, POLL_TEMP_URL, ZAQAR_MESSAGE
+      software_config_transport: POLL_SERVER_HEAT
+
+outputs:
+  result:
+    value:
+      get_attr: [deployment2, result]
+  stdout:
+    value:
+      get_attr: [deployment2, deploy_stdout]
+  stderr:
+    value:
+      get_attr: [deployment2, deploy_stderr]
+  status_code:
+    value:
+      get_attr: [deployment2, deploy_status_code]

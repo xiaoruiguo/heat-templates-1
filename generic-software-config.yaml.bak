@@ -14,6 +14,19 @@ parameters:
 
 resources:
 
+#  deployment:
+#    type: OS::Heat::SoftwareDeployment
+#    properties:
+#      config:
+#        get_resource: config
+#      server:
+#        get_resource: server
+#      input_values:
+#        foo: fooooo
+#        bar: baaaaa
+#    depends_on: [ server, config ]
+
+
   config:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -31,6 +44,19 @@ resources:
         echo "Writing to /tmp/$bar"
         echo "Output to stderr" 1>&2
 
+#  boot_config:
+#    type: Heat::InstallConfigAgent
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      image: centos7-software-config
+      flavor: m1.small
+      networks:
+        - network: tenant
+      key_name: default
+      user_data_format: SOFTWARE_CONFIG
+
 
   deployment:
     type: OS::Heat::SoftwareDeployment
@@ -40,18 +66,9 @@ resources:
       server:
         get_resource: server
       input_values:
-        foo: fooooo1
-        bar: baaaaa1
-
-  server:
-    type: OS::Nova::Server
-    properties:
-      image: centos7-software-config-golden
-      flavor: m1.small
-      networks:
-        - network: tenant
-      key_name: default
-      user_data_format: SOFTWARE_CONFIG
+        foo: fooooo
+        bar: baaaaa
+#    depends_on: [ server, config ]
 
 outputs:
 
